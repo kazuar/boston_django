@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Title</title>
+    <meta charset="utf-8">
+    <style>
+      @import url(https://fonts.googleapis.com/css?family=Yanone+Kaffeesatz);
+      @import url(https://fonts.googleapis.com/css?family=Droid+Serif:400,700,400italic);
+      @import url(https://fonts.googleapis.com/css?family=Ubuntu+Mono:400,700,400italic);
+
+      body { font-family: 'Droid Serif';}
+      h1, h2, h3 {
+        font-family: 'Yanone Kaffeesatz';
+        font-weight: normal;
+      }
+      .title_slide h1 {
+        font-size: 65px;
+      }
+      .remark-code, .remark-inline-code { font-family: 'Ubuntu Mono'; }
+
+      .padded-list {
+        padding: 20px;
+      }
+
+      .slides {
+        background-color: #F2F1EC;
+      }
+
+      .background-slide {
+        background-color: #F2F1EC;
+      }
+
+      .background-slide li {
+        padding: 30px;
+        font-size: 30px;
+      }
+
+      .env_image_slide {
+        background-color: #F2F1EC;
+        background-image: url(images/environment5.png);
+      }
+
+      .worflow_step1_slide{
+        background-image: url(images/content_acquisition.png);
+      }
+
+      .combiner_slide{
+        background-image: url(images/combine.png);
+      }
+
+      .last_slide{
+        background-color: #F2F1EC;
+        background-image: url(images/have_a_safe_journey.png);
+      }
+
+      .left-column {
+        width: 50%;
+        height: 92%;
+        float: left;
+      }
+      .right-image {
+        float: right;
+      }
+      .right-column {
+        position: fixed;
+        left: 50%;
+        top: 1%;
+        width: 50%;
+        float: right;
+      }
+
+      .worflow_step1,
+      .worflow_step2,
+      .worflow_step3,
+      .worflow_step4
+      {
+        border: 1px;
+        border-style: solid;
+        border-radius: 10px;
+        display: block;
+        padding-left: 10px;
+      }
+
+      .worflow_step1 {
+        background-color: #A4C2F4;
+      }
+
+      .worflow_step2 {
+        background-color: #B6D7A8;
+      }
+
+      .worflow_step3 {
+        background-color: #F9CB9C;
+      }
+
+      .worflow_step4 {
+        background-color: #DD7D6B;
+      }
+
+      .content-acquisition-left-column {
+        width: 40%;
+        float: left;
+        border-right-style: solid;
+      }
+      
+      .content-acquisition-right-column {
+        position: fixed;
+        left: 50%;
+        width: 60%;
+        float: right;
+      }
+
+      .content-acquisition-right-column li {
+        padding: 5px 0px 5px 0px;
+      }
+
+      .padding-text-left h3 {
+        padding-left: 100px;
+      }
+
+      .spaced_bullets li {
+        padding: 10px 0px 10px 0px;
+        font-size: 28px;
+      }
+
+      .footnote {
+        position: absolute;
+        bottom: 3em;
+        text-align: left;
+        line-height: 5px;
+      }
+
+    </style>
+  </head>
+  <body>
+    <textarea id="source">
+
+class: center, middle, slides, title_slide
+
+# Django as a backend for data mining
+
+.footnote[
+Isaac Vidas
+
+[kazuar.github.io](http://kazuar.github.io)
+
+[github.com/kazuar](http://github.com/kazuar)
+]
+
+---
+
+class: background-slide
+
+# Background
+
+1. Started as a software developer in the Israeli army
+2. Background as a security software engineer
+3. Joined Desti (desti.com) as a data engineer
+4. Desti acquired by HERE maps (2014)
+
+---
+
+class: slides
+
+# The stack
+
+.left-column[
+
+## Application servers
+
+1. Django - ORM, south
+2. PostgreSQL
+3. PostGIS
+
+## Harvesting environment
+
+1. Pure Python
+2. Mongodb (pymongo)
+3. RabbitMQ (pyrabbit)
+]
+
+.right-column[
+
+![Right-aligned image](images/cake.png)
+
+## Infrastructure
+
+1. AWS
+2. Amazon EC2
+3. Amazon S3
+
+## Enviroments
+
+1. Production
+2. Staging
+3. Development
+]
+
+---
+
+class: slides
+
+# A long time ago ...
+
+![image](images/environment1.png)
+
+---
+
+class: slides
+
+# After a while ...
+
+![image](images/environment2.png)
+
+---
+
+class: slides
+
+# And finally ... things got REAL!
+
+![image](images/environment3.png)
+
+---
+
+class: slides
+
+# OK, now for real...
+
+![image](images/environment4.png)
+
+---
+
+class: slides
+
+# Workflow
+
+## .worflow_step1[Content acquisition]
+## .worflow_step2[Enrichment: Links to places on other websites]
+## .worflow_step3[Entity resolution: Find POIs of the same place]
+## .worflow_step4[Final process - combine + publish to users]
+
+---
+
+class: worflow_step1_slide
+
+# .worflow_step1[Content acquisition]
+
+---
+
+class: slides
+
+.content-acquisition-left-column[
+# Content providers
+
+### Foursquare
+### Facebook
+### Instagram
+### Wikipedia
+### Hotelscombined
+#### ...
+]
+
+.content-acquisition-right-column[
+# What we need
+* Name
+* Address
+* Geo coordinates
+* Phone
+* Website
+* Email
+* Description
+* Sub types
+* Attributes
+* Amenities
+* Features
+* Booking details
+* Images
+]
+
+---
+
+class: slides
+
+# General scraper
+
+```python
+import requests
+import urllib2
+import BeautifulSoup
+import lxml.html
+
+class Harvester(object):
+    def __init__(self, fetch_interval):
+      ...
+
+    def get_poi_urls(self, city_name, state_name, country_name):
+      ...
+
+    def get_poi_data(self, poi_url):
+      ... 
+
+    def get_poi_reviews(self, poi_url):
+      ...
+
+    def _generate_poi_from_scraped_data(self, poi, base_poi_type):
+      ...
+
+    def _parse_review(review):
+      ...
+```
+
+---
+
+class: slides
+
+# Scraper manager
+
+```python
+class ScraperManager(object):
+  def __init__(self):
+      ...
+
+  def _main_loop_iteration(self):
+      # Get configuration for harvester
+      self._get_config()
+      # Set current status of harvester 
+      self._set_status()
+      # Get new tasks to work on
+      self._get_tasks()
+      # Execute tasks and send results to server
+      for data in self._execute_task(task):
+          self._send_data_to_server()
+
+  def main(self, num_iterations = None):
+      self._initialize()
+      while True:
+          try:
+              self._main_loop_iteration()
+          except harvester_exceptions.StopHarvesterException:
+              self.log_error('Stopping harvester')
+          except rate_limit_exception:
+              self.log_error('API exceeded its quota.')
+              time.sleep(600)
+  ...
+```
+
+---
+
+class: slides
+
+# Wikipedia example
+
+```python
+def wikipedia_geo_search(lat, lon, name, lang = None):
+    wikipedia_pages = []
+    if lang:
+        wikipedia.set_lang(lang)
+    results = wikipedia.geo_search(lat, lon, radius = MAX_RADIUS)
+    for result in results:
+        is_name_match = matching_utils.name_match(name, result)
+        if is_name_match:
+            wikipedia_page = wikipedia.page(result)
+            wikipedia_pages.append(wikipedia_page)
+    return wikipedia_pages
+```
+
+* https://github.com/goldsmith/Wikipedia - I’ve contributed search by geo coordinates :) 
+
+* In case you need to perform heavy sets of queries, it’s better to download wikipedia data dump
+
+---
+
+class: slides
+
+# .worflow_step2[Images enrichment - Instagram example]
+
+```python
+def query_locations(foursquare_id = None, facebook_id = None):
+    instagram_locations = []
+    api = InstagramAPI(client_id = CLIENT_ID, client_secret = CLIENT_SECRET)
+    if foursquare_id:
+        fs_locations = api.location_search(
+            None, 
+            MAX_RESULTS, 
+            foursquare_v2_id = foursquare_id)
+        if fs_locations:
+          instagram_locations.extend(fs_locations)
+    if facebook_id:
+        facebook_locations = api.location_search(
+            None,
+            MAX_RESULTS,
+            facebook_places_id = facebook_id)
+        if facebook_locations:
+           instagram_locations.extend(facebook_locations)
+    return instagram_locations
+```
+* Results are used only for enrichment as hotlinks
+* Allowing to convert FS / FB location ids to instagram ids
+* Search images based on geo coordinates and image tags
+* Image tags analysis can provide better images
+
+---
+
+class: slides
+
+# .worflow_step3[Entity resolution: matching POIs]
+
+.center[![image](images/golden_gate_bridge_equal.png)]
+
+.spaced_bullets[
+* Match POIs from different data providers
+* Feature extractions from POI attributes
+* Some POIs have external links to other providers
+]
+
+---
+
+class: slides
+
+# .worflow_step3[Entity resolution: unmatching POIs]
+
+.center[![image](images/entity_resolution.png)]
+
+.center[![image](images/cambridge_common_entity_resolution.png)]
+
+---
+
+class: slides
+
+# Entity resolution example
+
+```python
+def match_poi(poi_data, candidate):
+    is_name_match = name_match(poi_data, candidate)
+    is_address_match = address_match(poi_data, candidate)
+    is_location_match = location_match(poi_data, candidate)
+    is_phone_match = phone_match(poi_data, candidate)
+    is_homepage_match = website_match(poi_data, candidate)
+    is_big_poi = poi_data.get('is_big_poi', False)
+    ...
+```
+
+.spaced_bullets[
+* Check matching attributes: name, address, location, phone, etc.
+* Create a list of possible candidates
+* If too many POIs are matched this is a problem
+* If popular POI has no match this is also a problem
+]
+
+---
+
+class: combiner_slide
+
+# .worflow_step4[Final process - combine + publish to users]
+
+---
+
+class: slides
+
+# Import and combine POIs
+
+#### Import POIs
+```python
+# Initialize object
+poi_importer = PoiImporter()
+
+# Get import task
+data = task_assigner_manager.get_import_task()
+
+# import POIs
+result = poi_importer_manager.import_poi(data['poi_id'])
+
+# Create combine task
+task_assigner_manager.create_combine_task(poi_id)
+```
+
+#### Combine POIs
+```python
+# Get combine task
+data = task_assigner_manager.get_combine_task()
+...
+# Combine POI
+combiner.combine_poi(data['poi_id'])
+```
+
+---
+
+class: slides
+
+# Lessons learned
+
+.spaced_bullets[
+1. Content methodology
+2. Bad data
+3. Reports and dashboards
+4. Entity resolution
+    1. False negative
+    2. False positive
+]
+
+---
+
+class: slides, center, middle
+
+## 87% of statistics are made up on the spot
+
+### Use random.seed()
+
+---
+
+class: slides
+
+# What to consider when taking a sample?
+
+.spaced_bullets[
+1. What is the quality of our sample?
+2. Can we reach a descision with the desired level of certainty?
+3. If the same sampling design strategy is used again for similar task, can we still reach a descision with the desired level of certainty?
+4. Is is likely that sufficient samples were taken to show an affect?
+]
+
+---
+
+class: slides
+
+# Content methodology
+
+![image](images/content_methodology.png)
+
+---
+
+class: slides
+
+# Bad content
+
+.left-column[
+.spaced_bullets[
+1. Test new content
+2. Test updated content
+3. Use unit tests and system tests
+4. Use staging environment
+5. Copy production database on staging environment 
+]]
+
+.right-image[
+![image](images/breaking_bad_content.png)
+]
+
+---
+
+class: slides
+
+# Disable content
+
+## Suppress content providers
+
+```python
+# Get suppressed content providers 
+suppressed_content_providers = 
+  list(ContentProvider.objects.filter(is_suppressed = True).values_list('name', flat = True))
+
+# Some code
+
+if content_provider.name in suppressed_content_providers:
+  continue
+
+# Some more code
+
+if poi.content_provider_name in suppressed_content_providers:
+  continue
+
+# Even more code
+```
+
+---
+
+class: slides
+
+# Disable content
+
+## Add new content with feature flags
+
+.spaced_bullets[
+1. What kind of data will be visible
+2. Ability to hide unwanted data without deployment
+3. Ability to test new features on specific users / areas
+]
+
+```python
+if ServerFeature.is_content_provider_enabled(poi.content_provider):
+  ...
+
+if ServerFeature.is_hotel_availability_enabled():
+  ...
+
+if ServerFeature.is_representative_sub_type_enabled():
+  ...
+```
+
+---
+
+class: slides
+
+# Reports and dashboards
+
+.center[![image](images/dashboard.png)]
+
+[pyxley](https://github.com/stitchfix/pyxley)
+
+---
+
+class: slides
+
+# Entity resolution: over-matching
+
+.center[![image](images/day_46.jpg)]
+
+---
+
+class: slides
+
+# Entity resolution: under-matching
+
+.center[![image](images/copy_cat.jpg)]
+
+---
+
+class: slides
+
+# Entity resolution: under-matching
+
+.center[![image](images/be_unique.jpg)]
+
+---
+
+class: slides
+
+# Summary
+
+.spaced_bullets[
+* Handle new content with care
+* Break down long processes
+* Find bottlenecks 
+* Create well defined methods
+* Issues are probably systemic
+]
+
+---
+
+class: last_slide
+
+
+    </textarea>
+    <script src="remark.min.js" type="text/javascript">
+    </script>
+    <script>
+      var slideshow = remark.create({
+        highlightStyle: 'monokai',
+      });
+
+      document.onclick = function(event) {
+        if (event.target.tagName !== "A") {
+          slideshow.gotoNextSlide();
+        }
+      }
+
+      document.oncontextmenu = function(event) {
+        slideshow.gotoPreviousSlide();
+        return false;
+      }
+    </script>
+  </body>
+</html>
